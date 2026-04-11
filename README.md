@@ -1,0 +1,47 @@
+# ip-geolocation-service
+
+A REST service that takes an IP address and returns geographic information about it: country, region, city, coordinates, timezone, and ISP.
+
+## What it does
+
+- Accepts a GET request with an IP parameter and a required `x-device-platform` header
+- Calls ip-api.com to fetch geolocation data
+- Caches results in memory for 24 hours (configurable) to avoid repeated external calls
+- Falls back to Brazil as default country if the external API fails or the IP is private/reserved
+- Validates IP format and rejects invalid or private addresses with clear error messages
+
+## Stack
+
+- Java 21 (Temurin)
+- Spring Boot 3.5.x
+- Spring Cache + Caffeine (in-memory cache)
+- java.net.http.HttpClient (no RestTemplate or WebClient)
+- Lombok
+- SpringDoc OpenAPI (Swagger UI)
+- JUnit 5, AssertJ, Mockito, WireMock
+- Maven
+
+## Prerequisites
+
+- Java 21
+- Maven 3.9+
+
+## Running
+
+```bash
+./mvnw spring-boot:run
+```
+
+The service starts on port 8080 by default.
+
+## Tests
+
+```bash
+./mvnw test
+```
+
+## API
+
+Base path: `GET /api/geolocation/v1/locate`
+
+Full documentation available at `http://localhost:8080/swagger-ui.html` when the service is running.

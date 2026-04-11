@@ -1,3 +1,18 @@
 spring:
   application:
     name: ip-geolocation-service
+
+server:
+  port: 8080
+
+app:
+  geolocation:
+    api-url: http://ip-api.com/json
+    timeout-seconds: 5
+  fallback:
+    country:
+      code: BR
+      name: Brazil
+  cache:
+    ttl-hours: 24
+    max-size: 10000
