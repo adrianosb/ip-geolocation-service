@@ -1,7 +1,10 @@
 package com.adriano.ip_geolocation_service.infrastructure.validation;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,5 +78,50 @@ class IpAddressValidatorTest {
     void privateIpsShouldHaveValidFormatButBeMarkedAsReserved(String ip) {
         assertThat(validator.isValidFormat(ip)).isTrue();
         assertThat(validator.isPrivateOrReserved(ip)).isTrue();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "::", // unspecified address (0:0:0:0:0:0:0:0) — both halves empty after split
+            "1::", // trailing double colon, right half empty
+            "::ffff:0:0", // left half empty, right has groups
+            "fe80::", // link-local prefix, right half empty
+    })
+    void ipv6WithDoubleColonEdgeCasesShouldPassFormatCheck(String ip) {
+        assertThat(validator.isValidFormat(ip)).isTrue();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            ":::", // triple colon
+            "1::2::3", // two double colons
+            "12345::1", // hex group with 5 chars
+            "gggg::1", // invalid hex chars
+            "::0:0:0:0:0:0:0:0" // eight explicit groups plus :: = too many
+    })
+    void invalidIpv6PatternsShouldFailFormatCheck(String ip) {
+        assertThat(validator.isValidFormat(ip)).isFalse();
+    }
+
+    @Test
+    void unspecifiedAddressShouldBeValidButNotReserved() {
+        assertThat(validator.isValidFormat("::")).isTrue();
+        assertThat(validator.isPrivateOrReserved("::")).isFalse();
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EmptySource
+    @ValueSource(strings = { "   " })
+    void nullOrBlankShouldFailFormatCheck(String ip) {
+        assertThat(validator.isValidFormat(ip)).isFalse();
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EmptySource
+    @ValueSource(strings = { "   " })
+    void nullOrBlankShouldNotBeConsideredPrivateOrReserved(String ip) {
+        assertThat(validator.isPrivateOrReserved(ip)).isFalse();
     }
 }
