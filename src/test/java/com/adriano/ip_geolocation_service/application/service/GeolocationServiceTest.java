@@ -41,7 +41,7 @@ class GeolocationServiceTest {
     @BeforeEach
     void setUp() {
         properties = new AppProperties(
-                new AppProperties.Geolocation("http://ip-api.com/json", 5),
+                new AppProperties.Geolocation("ip-api", "http://ip-api.com/json", 5),
                 new AppProperties.Fallback(new AppProperties.Fallback.Country("BR", "Brazil")),
                 new AppProperties.Cache(24, 10000));
 

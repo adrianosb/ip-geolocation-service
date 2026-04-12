@@ -7,6 +7,7 @@ server:
 
 app:
   geolocation:
+    provider: ip-api
     api-url: http://ip-api.com/json
     timeout-seconds: 5
   fallback:

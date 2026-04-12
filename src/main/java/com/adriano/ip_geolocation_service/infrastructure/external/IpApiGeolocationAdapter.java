@@ -6,6 +6,7 @@ import com.adriano.ip_geolocation_service.infrastructure.config.AppProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.net.ConnectException;
@@ -18,6 +19,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 @Component
+@ConditionalOnProperty(name = "app.geolocation.provider", havingValue = "ip-api", matchIfMissing = true)
 public class IpApiGeolocationAdapter implements GeolocationPort {
 
     private static final Logger log = LoggerFactory.getLogger(IpApiGeolocationAdapter.class);
