@@ -4,6 +4,7 @@ import com.adriano.ip_geolocation_service.application.exception.InvalidIpAddress
 import com.adriano.ip_geolocation_service.application.model.GeolocationInfo;
 import com.adriano.ip_geolocation_service.application.model.GeolocationResponse;
 import com.adriano.ip_geolocation_service.application.port.GeolocationPort;
+import com.adriano.ip_geolocation_service.application.port.GeolocationUseCase;
 import com.adriano.ip_geolocation_service.infrastructure.config.AppProperties;
 import com.adriano.ip_geolocation_service.infrastructure.validation.IpAddressValidator;
 import org.slf4j.Logger;
@@ -17,7 +18,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 @Service
-public class GeolocationService {
+public class GeolocationService implements GeolocationUseCase {
 
     private static final Logger logger = LoggerFactory.getLogger(GeolocationService.class);
 
@@ -36,6 +37,7 @@ public class GeolocationService {
         this.properties = properties;
     }
 
+    @Override
     public GeolocationResponse locate(@NonNull String ip) {
         if (!validator.isValidFormat(ip)) {
             throw new InvalidIpAddressException(ip);

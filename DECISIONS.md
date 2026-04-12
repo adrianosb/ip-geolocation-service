@@ -17,7 +17,12 @@ A separate `domain/` layer would add complexity without benefit for a service th
 
 ## Hexagonal ports and adapters
 
-`GeolocationPort` is defined in `application/port/` and implemented in `infrastructure/external/`. The application layer defines what it needs; the infrastructure layer provides the implementation. This makes it easy to swap the external API client without touching business logic.
+The application layer exposes two port interfaces in `application/port/`:
+
+- **Input port** (`GeolocationUseCase`): defines the use case the controller depends on. The controller never references `GeolocationService` directly, only this interface.
+- **Output port** (`GeolocationPort`): defines what the service needs from external data sources, implemented in `infrastructure/external/`.
+
+This keeps the dependency direction consistent: `infrastructure → application` through interfaces on both sides, never the reverse.
 
 ## Cache
 

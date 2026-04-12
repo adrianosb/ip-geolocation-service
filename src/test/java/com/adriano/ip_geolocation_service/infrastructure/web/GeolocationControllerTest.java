@@ -2,7 +2,7 @@ package com.adriano.ip_geolocation_service.infrastructure.web;
 
 import com.adriano.ip_geolocation_service.application.exception.InvalidIpAddressException;
 import com.adriano.ip_geolocation_service.application.model.GeolocationResponse;
-import com.adriano.ip_geolocation_service.application.service.GeolocationService;
+import com.adriano.ip_geolocation_service.application.port.GeolocationUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -28,7 +28,7 @@ class GeolocationControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private GeolocationService geolocationService;
+    private GeolocationUseCase geolocationService;
 
     @Test
     void validRequest_returnsOkWithBody() throws Exception {

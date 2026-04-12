@@ -2,7 +2,7 @@ package com.adriano.ip_geolocation_service.infrastructure.web;
 
 import com.adriano.ip_geolocation_service.application.exception.InvalidDevicePlatformException;
 import com.adriano.ip_geolocation_service.application.model.GeolocationResponse;
-import com.adriano.ip_geolocation_service.application.service.GeolocationService;
+import com.adriano.ip_geolocation_service.application.port.GeolocationUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,9 +26,9 @@ public class GeolocationController {
 
     private static final Set<String> VALID_PLATFORMS = Set.of("iOS", "Android", "Web");
 
-    private final GeolocationService geolocationService;
+    private final GeolocationUseCase geolocationService;
 
-    public GeolocationController(GeolocationService geolocationService) {
+    public GeolocationController(GeolocationUseCase geolocationService) {
         this.geolocationService = geolocationService;
     }
 
