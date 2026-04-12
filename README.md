@@ -15,11 +15,6 @@ A REST service that takes an IP address and returns geographic information about
 - Java 21 (Temurin)
 - Spring Boot 3.5.x
 - Spring Cache + Caffeine (in-memory cache)
-- java.net.http.HttpClient (no RestTemplate or WebClient)
-- Lombok
-- SpringDoc OpenAPI (Swagger UI)
-- JUnit 5, AssertJ, Mockito, WireMock
-- Maven
 
 ## Prerequisites
 
