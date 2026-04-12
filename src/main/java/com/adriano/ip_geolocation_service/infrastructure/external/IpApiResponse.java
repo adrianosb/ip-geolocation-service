@@ -1,5 +1,8 @@
 package com.adriano.ip_geolocation_service.infrastructure.external;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record IpApiResponse(
         String status,
         String country,

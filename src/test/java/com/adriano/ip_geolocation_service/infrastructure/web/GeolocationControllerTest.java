@@ -86,6 +86,14 @@ class GeolocationControllerTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = { "desktop", "ANDROID", "ios", "WEB", "tablet", "" })
+    void invalidPlatforms_return400(String platform) throws Exception {
+        mockMvc.perform(get(URL).param("ip", "8.8.8.8").header(PLATFORM_HEADER, platform))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("INVALID_DEVICE_PLATFORM"));
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = { "iOS", "Android", "Web" })
     void validPlatforms_return200(String platform) throws Exception {
         GeolocationResponse response = buildResponse("8.8.8.8", "api");
