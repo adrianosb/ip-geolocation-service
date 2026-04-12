@@ -153,7 +153,7 @@
 			<plugin>
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
-				<version>1.17.3</version>
+				<version>1.19.1</version>
 				<dependencies>
 					<dependency>
 						<groupId>org.pitest</groupId>
@@ -169,6 +169,7 @@
 						<param>com.adriano.ip_geolocation_service.*</param>
 					</targetTests>
 					<mutationThreshold>70</mutationThreshold>
+					<withHistory>true</withHistory>
 					<outputFormats>
 						<outputFormat>HTML</outputFormat>
 					</outputFormats>
