@@ -1,6 +1,12 @@
 # Technical Decisions
 
+## Framework: Spring Boot over Micronaut
+
+The challenge allowed either Spring Boot or Micronaut. I chose Spring Boot because I know it well and am more comfortable working with it. Given the scope of this service, the practical difference between the two is minimal, so familiarity was the deciding factor.
+
 ## Two-layer architecture (application + infrastructure)
+
+The challenge required a clear layered structure following Clean Architecture principles (RNF1). I also chose this approach because Clean Architecture and Hexagonal Architecture are patterns I have been studying, so this was a good opportunity to apply them in practice.
 
 The project uses two layers instead of three:
 
@@ -19,7 +25,11 @@ The cache stores `GeolocationInfo` (raw data from the API) keyed by IP, not the 
 
 `@Cacheable` was not used because it would cache the complete `GeolocationResponse` with `source="api"`, making cache hits indistinguishable on the response. Instead, the service accesses `CacheManager` directly, which gives full control over what gets stored and when.
 
-Caffeine was chosen over Redis. The service runs as a single instance, so a distributed cache adds no benefit. TTL and max size are externalized in `application.yaml` and overridable via environment variables. If the service ever needs to scale horizontally, the change is limited to `CacheConfig` (switch to `RedisCacheManager`) and minor adjustments in `GeolocationService`.
+Caffeine was chosen as the in-memory cache library (the challenge suggested Caffeine, Guava, or similar). I picked Caffeine because I know it well, it integrates cleanly with Spring Cache, and it supports TTL and max size out of the box. Redis was not added, the service runs as a single instance, so a distributed cache adds no benefit. TTL and max size are externalized in `application.yaml` and overridable via environment variables.
+
+## Java Records over Lombok
+
+The challenge stack listed Lombok, and RNF5 says "Lombok or Records". I chose Records because they are a native Java 17+ feature that covers all the boilerplate reduction needed here (models, DTOs, config properties) without an extra dependency. Lombok would add nothing that Records do not already provide for this project.
 
 ## Geolocation provider selection via configuration
 
