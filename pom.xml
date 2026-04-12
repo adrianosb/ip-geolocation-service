@@ -11,7 +11,7 @@
 	<groupId>com.adriano</groupId>
 	<artifactId>ip-geolocation-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
+	<name>IP Geolocation Service</name>
 	<description/>
 	<url/>
 	<licenses>
