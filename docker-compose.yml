@@ -1,12 +1,21 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: ip-geolocation-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
   app:
     build: .
     container_name: ip-geolocation-service
     ports:
       - "8080:8080"
+    depends_on:
+      - redis
     environment:
-      - SPRING_PROFILES_ACTIVE=default
-      - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=redis
+      - REDIS_URL=redis://redis:6379
       - APP_GEOLOCATION_API_URL=http://ip-api.com/json
       - APP_GEOLOCATION_TIMEOUT_SECONDS=5
       - APP_FALLBACK_COUNTRY_CODE=BR

@@ -30,7 +30,12 @@ The cache stores `GeolocationInfo` (raw data from the API) keyed by IP, not the 
 
 `@Cacheable` was not used because it would cache the complete `GeolocationResponse` with `source="api"`, making cache hits indistinguishable on the response. Instead, the service accesses `CacheManager` directly, which gives full control over what gets stored and when.
 
-Caffeine was chosen as the in-memory cache library (the challenge suggested Caffeine, Guava, or similar). I picked Caffeine because I know it well, it integrates cleanly with Spring Cache, and it supports TTL and max size out of the box. Redis was not added, the service runs as a single instance, so a distributed cache adds no benefit. TTL and max size are externalized in `application.yaml` and overridable via environment variables.
+The cache backend is selected by Spring profile:
+
+- **Default (local)**: Caffeine in-memory cache. No external dependency, works out of the box, configured with TTL and max size from `application.yaml`.
+- **`redis` profile (production)**: Redis via `spring-boot-starter-data-redis`. Activated by setting `SPRING_PROFILES_ACTIVE=redis` and `REDIS_URL`. Values are serialized as JSON using `GenericJackson2JsonRedisSerializer`. On Railway, `REDIS_URL` maps to the Redis plugin's connection URL.
+
+`docker-compose.yml` runs both services and sets the `redis` profile automatically. TTL and max size remain externalized and overridable via environment variables.
 
 ## Java Records over Lombok
 
