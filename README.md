@@ -46,6 +46,14 @@ The service starts on port 8080 by default.
 ./mvnw test
 ```
 
+To run mutation tests:
+
+```bash
+./mvnw test pitest:mutationCoverage
+```
+
+The HTML report is generated at `target/pit-reports/index.html`.
+
 ## API
 
 ### Endpoint

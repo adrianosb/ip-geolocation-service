@@ -24,3 +24,7 @@ Fallback responses are never cached, as required by RF4 (only successful API res
 ## Geolocation provider selection via configuration
 
 The active geolocation adapter is selected by `app.geolocation.provider` in `application.yaml` using `@ConditionalOnProperty`. The current default is `ip-api`. To switch providers, create a new adapter implementing `GeolocationPort`, annotate it with the matching property value, and change one line in the YAML. No changes to the service or any other class are needed.
+
+## Mutation testing scope: application layer only
+
+Pitest targets `com.adriano.ip_geolocation_service.application.*` (service, models, port, exceptions). The infrastructure layer is covered by integration and adapter tests, but mutation testing there would mostly exercise framework wiring rather than business logic. Limiting the scope keeps the mutation run fast (under 2 minutes) and focused on the code that matters most.
