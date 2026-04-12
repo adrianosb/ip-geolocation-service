@@ -45,7 +45,7 @@ public class IpApiGeolocationAdapter implements GeolocationPort {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             IpApiResponse apiResponse = objectMapper.readValue(response.body(), IpApiResponse.class);
 
-            if (!"success".equals(apiResponse.status())) {
+            if (!apiResponse.isSuccess()) {
                 log.warn("ip-api.com returned status '{}' for IP {}", apiResponse.status(), ip);
                 return Optional.empty();
             }

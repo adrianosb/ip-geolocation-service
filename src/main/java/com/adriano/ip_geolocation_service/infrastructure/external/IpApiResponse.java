@@ -12,4 +12,8 @@ public record IpApiResponse(
         String timezone,
         String isp,
         String query) {
+
+    public boolean isSuccess() {
+        return "success".equals(status);
+    }
 }
