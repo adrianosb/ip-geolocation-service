@@ -85,3 +85,20 @@ curl "http://localhost:8080/api/geolocation/v1/locate?ip=999.999.999.999" \
 ### Interactive documentation
 
 Swagger UI is available at `http://localhost:8080/swagger-ui.html` when the service is running. The OpenAPI spec is at `http://localhost:8080/v3/api-docs`.
+
+## Docker
+
+Build and run with a single command:
+
+```bash
+docker compose up
+```
+
+Or build and run manually:
+
+```bash
+docker build -t ip-geolocation-service .
+docker run -p 8080:8080 ip-geolocation-service
+```
+
+The service is available at `http://localhost:8080` in both cases.
