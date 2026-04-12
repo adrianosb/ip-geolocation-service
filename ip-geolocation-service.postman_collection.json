@@ -1,0 +1,194 @@
+{
+  "info": {
+    "name": "ip-geolocation-service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Public IP - Google DNS (Web)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-device-platform",
+            "value": "Web"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/geolocation/v1/locate?ip=8.8.8.8",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "geolocation", "v1", "locate"],
+          "query": [
+            {
+              "key": "ip",
+              "value": "8.8.8.8"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Brazilian IP (Android)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-device-platform",
+            "value": "Android"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/geolocation/v1/locate?ip=177.45.123.45",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "geolocation", "v1", "locate"],
+          "query": [
+            {
+              "key": "ip",
+              "value": "177.45.123.45"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "IPv6 - Google DNS (iOS)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-device-platform",
+            "value": "iOS"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/geolocation/v1/locate?ip=2001:4860:4860::8888",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "geolocation", "v1", "locate"],
+          "query": [
+            {
+              "key": "ip",
+              "value": "2001:4860:4860::8888"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Private IP - fallback (Web)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-device-platform",
+            "value": "Web"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/geolocation/v1/locate?ip=192.168.1.1",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "geolocation", "v1", "locate"],
+          "query": [
+            {
+              "key": "ip",
+              "value": "192.168.1.1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Localhost - fallback (Web)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-device-platform",
+            "value": "Web"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/geolocation/v1/locate?ip=127.0.0.1",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "geolocation", "v1", "locate"],
+          "query": [
+            {
+              "key": "ip",
+              "value": "127.0.0.1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Invalid IP - 400 INVALID_IP_FORMAT (Web)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-device-platform",
+            "value": "Web"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/geolocation/v1/locate?ip=999.999.999.999",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "geolocation", "v1", "locate"],
+          "query": [
+            {
+              "key": "ip",
+              "value": "999.999.999.999"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Missing header - 400 INVALID_DEVICE_PLATFORM",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/geolocation/v1/locate?ip=8.8.8.8",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "geolocation", "v1", "locate"],
+          "query": [
+            {
+              "key": "ip",
+              "value": "8.8.8.8"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Invalid header value - 400 INVALID_DEVICE_PLATFORM",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-device-platform",
+            "value": "Desktop"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/geolocation/v1/locate?ip=8.8.8.8",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "geolocation", "v1", "locate"],
+          "query": [
+            {
+              "key": "ip",
+              "value": "8.8.8.8"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -111,6 +111,12 @@ docker run -p 8080:8080 ip-geolocation-service
 
 The service is available at `http://localhost:8080` in both cases.
 
+## Postman/Insomnia Collection
+
+A ready-to-use collection is available at [ip-geolocation-service.postman_collection.json](ip-geolocation-service.postman_collection.json).
+
+The base URL is set as a `{{baseUrl}}` variable (default: `http://localhost:8080`), change it once to point to any environment.
+
 ## CI
 
 The project uses GitHub Actions for continuous integration. On every push or pull request to `main` or `develop`, it runs `mvn clean verify` which compiles, runs all tests, and verifies the build. Test reports are uploaded as artifacts and kept for 7 days.
