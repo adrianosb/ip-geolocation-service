@@ -17,7 +17,8 @@ public class CacheConfig {
         AppProperties.Cache cache = appProperties.cache();
         Caffeine<Object, Object> caffeineSpec = Caffeine.newBuilder()
                 .maximumSize(cache.maxSize())
-                .expireAfterWrite(cache.ttlHours(), TimeUnit.HOURS);
+                .expireAfterWrite(cache.ttlHours(), TimeUnit.HOURS)
+                .recordStats();
         CaffeineCacheManager manager = new CaffeineCacheManager("geolocation");
         manager.setCaffeine(Objects.requireNonNull(caffeineSpec));
         return manager;
