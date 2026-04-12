@@ -16,3 +16,9 @@ app:
   cache:
     ttl-hours: 24
     max-size: 10000
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
