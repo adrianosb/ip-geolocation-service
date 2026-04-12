@@ -26,6 +26,12 @@ A REST service that takes an IP address and returns geographic information about
 - Java 21
 - Maven 3.9+
 
+## Install
+
+```bash
+./mvnw install
+```
+
 ## Running
 
 ```bash
@@ -42,6 +48,40 @@ The service starts on port 8080 by default.
 
 ## API
 
-Base path: `GET /api/geolocation/v1/locate`
+### Endpoint
 
-Full documentation available at `http://localhost:8080/swagger-ui.html` when the service is running.
+`GET /api/geolocation/v1/locate`
+
+**Query parameters:**
+- `ip` (required) - IPv4 or IPv6 address
+
+**Headers:**
+- `x-device-platform` (required) - one of: `iOS`, `Android`, `Web`
+
+### Examples
+
+```bash
+# Public IP
+curl "http://localhost:8080/api/geolocation/v1/locate?ip=8.8.8.8" \
+  -H "x-device-platform: Web"
+
+# Brazilian IP
+curl "http://localhost:8080/api/geolocation/v1/locate?ip=177.45.123.45" \
+  -H "x-device-platform: Android"
+
+# IPv6
+curl "http://localhost:8080/api/geolocation/v1/locate?ip=2001:4860:4860::8888" \
+  -H "x-device-platform: iOS"
+
+# Private IP (returns Brazil fallback)
+curl "http://localhost:8080/api/geolocation/v1/locate?ip=192.168.1.1" \
+  -H "x-device-platform: Web"
+
+# Invalid IP (returns 400)
+curl "http://localhost:8080/api/geolocation/v1/locate?ip=999.999.999.999" \
+  -H "x-device-platform: Web"
+```
+
+### Interactive documentation
+
+Swagger UI is available at `http://localhost:8080/swagger-ui.html` when the service is running. The OpenAPI spec is at `http://localhost:8080/v3/api-docs`.
