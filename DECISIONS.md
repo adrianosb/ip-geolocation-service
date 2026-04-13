@@ -2,47 +2,47 @@
 
 ## Spring Boot
 
-I picked Spring Boot because I'm comfortable with it. For a service this size the difference to other frameworks is negligible.
+It's the framework I'm most familiar with, so I could focus on the problem itself.
 
 ## Two layers: application + infrastructure
 
-Two packages instead of three:
+I split the code into two packages:
 
-- `application/` -- business logic, models, port interfaces, exceptions. No framework imports.
-- `infrastructure/` -- controllers, HTTP client, cache, validation, config. Depends on `application/`, never the other way around.
+- `application/` - business logic, models, port interfaces, exceptions. No framework imports.
+- `infrastructure/` - controllers, HTTP client, cache, validation, config. Depends on `application/`, never the other way around.
 
-A dedicated `domain/` layer would just add folders without adding value here.
+A third `domain/` layer felt like overkill for a single-entity service. Two layers already keep the dependency direction clean.
 
 ## Ports and adapters
 
 Two port interfaces in `application/port/`:
 
-- `GeolocationUseCase` (input) -- the controller depends on this, not on the service class directly.
-- `GeolocationPort` (output) -- the service calls this to get data; the actual HTTP adapter lives in `infrastructure/external/`.
+- `GeolocationUseCase` (input) - the controller calls this instead of the service class directly.
+- `GeolocationPort` (output) - the service uses this to fetch data; the HTTP adapter that implements it lives in `infrastructure/external/`.
 
-Dependencies always point inward: infrastructure -> application.
+This keeps infrastructure depending on application, not the other way around.
 
 ## Cache
 
-The cache stores `GeolocationInfo` (raw API data) keyed by IP, not the full response. This way every cache hit gets a fresh timestamp and `source="cache"`. Fallback responses are never cached.
+The cache stores `GeolocationInfo` (the raw API data) keyed by IP, not the full response. That way each cache hit still gets a fresh timestamp and `source="cache"`. Fallback responses are never cached.
 
-I didn't use `@Cacheable` because it would cache the whole `GeolocationResponse` including `source="api"`, and cache hits would look the same as fresh calls. Using `CacheManager` directly gives control over what goes in and what stays out.
+I used `CacheManager` directly instead of `@Cacheable` because `@Cacheable` would store the entire `GeolocationResponse` including `source="api"`, and cache hits would look identical to fresh calls.
 
 Backend depends on the active Spring profile:
 
-- Default: Caffeine in-memory. No external dependency needed.
+- Default: Caffeine in-memory, no extra setup needed.
 - `redis` profile: Redis via `spring-boot-starter-data-redis`, serialized as JSON. Activated with `SPRING_PROFILES_ACTIVE=redis` and `REDIS_URL`.
 
-`docker-compose.yml` sets the `redis` profile automatically. TTL and max size are configurable via `application.yaml` or environment variables.
+`docker-compose.yml` sets the `redis` profile automatically. TTL and max size are configurable in `application.yaml`.
 
 ## Records over Lombok
 
-RNF5 says "Lombok or Records". Records are built into Java 17+ and cover everything needed here -- models, DTOs, config properties. No reason to add Lombok on top.
+The requirements mention "Lombok or Records". Since Records are built into Java 17+ and cover what I needed here (models, DTOs, config properties), I went with them to avoid an extra dependency.
 
 ## Provider selection
 
-The geolocation adapter is picked by `app.geolocation.provider` in `application.yaml` using `@ConditionalOnProperty`. To add a new provider: implement `GeolocationPort`, annotate it with the matching property value, change one line in the YAML.
+The geolocation adapter is selected by `app.geolocation.provider` in `application.yaml` using `@ConditionalOnProperty`. Adding a new provider means implementing `GeolocationPort`, annotating it with the matching property value, and changing one YAML line.
 
 ## Mutation testing scope
 
-Pitest runs only against `application.*`. Infrastructure code is already covered by integration and adapter tests. Running mutations there would mostly test framework wiring, not business logic.
+Pitest targets `application.*` only. Infrastructure code is covered by integration and adapter tests, and running mutations there would mostly exercise framework wiring rather than business logic.

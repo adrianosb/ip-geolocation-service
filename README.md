@@ -1,15 +1,13 @@
 # ip-geolocation-service
 
 [![CI](https://github.com/adrianosb/ip-geolocation-service/actions/workflows/ci.yml/badge.svg)](https://github.com/adrianosb/ip-geolocation-service/actions/workflows/ci.yml)
-![Java](https://img.shields.io/badge/Java-21-blue)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-green)
 
-REST microservice that receives an IP address and returns its geolocation: country, region, city, coordinates, timezone, and ISP. It calls ip-api.com under the hood, caches results with Caffeine (or Redis), and falls back to Brazil if the external API fails.
+REST microservice that takes an IP address and returns geolocation data: country, region, city, coordinates, timezone, and ISP. Uses ip-api.com as the external provider, caches results with Caffeine (or Redis), and falls back to Brazil when the external API is unavailable.
 
 ## Stack
 
 - Java 21, Spring Boot 3.5, Maven
-- Cache: Caffeine (local) / Redis (production)
+- Cache: Caffeine (local) / Redis (via Spring profile)
 - Tests: JUnit 5, Mockito, WireMock, Pitest
 - Docs: SpringDoc OpenAPI (Swagger UI)
 
@@ -112,15 +110,13 @@ GitHub Actions runs `mvn clean verify` on every push/PR to `main` or `develop`. 
 
 ## Technical decisions
 
-| Decision | Choice | Why |
-|---|---|---|
-| Framework | Spring Boot | Familiarity; for this scope, differences with alternatives are minimal |
-| Architecture | Two layers (`application/` + `infrastructure/`) | Clean/Hexagonal without a separate domain layer that would add no value here |
-| Ports and adapters | Input port (`GeolocationUseCase`) + output port (`GeolocationPort`) | Dependency direction always points infrastructure toward application |
-| Cache strategy | Caches raw `GeolocationInfo` by IP, not the full response | Cache hits get a fresh timestamp and correct `source="cache"`; fallbacks are never cached |
-| Cache backend | Caffeine (local) / Redis (production, via Spring profile) | No external dependency for local dev; Redis for distributed production |
-| Records over Lombok | Java Records | Native since Java 17, covers boilerplate reduction needed here without an extra dependency |
-| Provider selection | `@ConditionalOnProperty` on `app.geolocation.provider` | Swap providers by changing one YAML property |
-| Mutation testing | Scoped to `application.*` only | Keeps runs fast and focused on business logic |
+- **Spring Boot** -- the framework I know best, so I could focus on the problem itself.
+- **Two layers** (`application/` + `infrastructure/`) -- enough separation for a service this size without adding empty folders.
+- **Ports and adapters** -- input port (`GeolocationUseCase`) and output port (`GeolocationPort`) keep the dependency direction pointing inward.
+- **Cache** -- stores raw `GeolocationInfo` by IP so cache hits get a fresh timestamp and correct `source="cache"`. Fallbacks are never cached.
+- **Caffeine / Redis** -- Caffeine for local dev (no extra setup), Redis for production via Spring profile.
+- **Records over Lombok** -- Records cover everything needed here and are built into Java 17+.
+- **Provider selection** -- `@ConditionalOnProperty` on `app.geolocation.provider` lets you swap providers by changing one YAML line.
+- **Mutation testing** -- scoped to `application.*` to stay focused on business logic.
 
 Full rationale in [DECISIONS.md](DECISIONS.md).
