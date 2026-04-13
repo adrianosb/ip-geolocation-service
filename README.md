@@ -6,8 +6,6 @@
 
 REST microservice that receives an IP address and returns its geolocation: country, region, city, coordinates, timezone, and ISP. It calls ip-api.com under the hood, caches results with Caffeine (or Redis), and falls back to Brazil if the external API fails.
 
-Live instance: https://ip-geolocation-service-production.up.railway.app
-
 ## Stack
 
 - Java 21, Spring Boot 3.5, Maven
