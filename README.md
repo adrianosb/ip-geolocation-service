@@ -1,5 +1,9 @@
 # ip-geolocation-service
 
+[![CI](https://github.com/adrianosb/ip-geolocation-service/actions/workflows/ci.yml/badge.svg)](https://github.com/adrianosb/ip-geolocation-service/actions/workflows/ci.yml)
+![Java](https://img.shields.io/badge/Java-21-blue)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-green)
+
 A REST service that takes an IP address and returns geographic information about it: country, region, city, coordinates, timezone, and ISP.
 
 ## What it does
