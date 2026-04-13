@@ -6,7 +6,7 @@ A REST service that takes an IP address and returns geographic information about
 
 - Accepts a GET request with an IP parameter and a required `x-device-platform` header
 - Calls ip-api.com to fetch geolocation data
-- Caches results in memory for 24 hours (configurable) to avoid repeated external calls
+- Caches results for 24 hours (configurable). Locally uses Caffeine (in-memory); in production uses Redis (distributed)
 - Falls back to Brazil as default country if the external API fails or the IP is private/reserved
 - Validates IP format and rejects invalid or private addresses with clear error messages
 
@@ -14,7 +14,7 @@ A REST service that takes an IP address and returns geographic information about
 
 - Java 21 (Temurin)
 - Spring Boot 3.5.x
-- Spring Cache + Caffeine (in-memory cache)
+- Spring Cache + Caffeine (local) / Redis (production)
 
 ## Prerequisites
 
@@ -63,48 +63,56 @@ The HTML report is generated at `target/pit-reports/index.html`.
 
 ### Examples
 
+Using the live service:
+
 ```bash
-# Public IP
-curl "http://localhost:8080/api/geolocation/v1/locate?ip=8.8.8.8" \
+# Public IP (Google DNS)
+curl "https://ip-geolocation-service-production.up.railway.app/api/geolocation/v1/locate?ip=8.8.8.8" \
   -H "x-device-platform: Web"
 
 # Brazilian IP
-curl "http://localhost:8080/api/geolocation/v1/locate?ip=177.45.123.45" \
+curl "https://ip-geolocation-service-production.up.railway.app/api/geolocation/v1/locate?ip=177.45.123.45" \
   -H "x-device-platform: Android"
 
 # IPv6
-curl "http://localhost:8080/api/geolocation/v1/locate?ip=2001:4860:4860::8888" \
+curl "https://ip-geolocation-service-production.up.railway.app/api/geolocation/v1/locate?ip=2001:4860:4860::8888" \
   -H "x-device-platform: iOS"
 
 # Private IP (returns Brazil fallback)
-curl "http://localhost:8080/api/geolocation/v1/locate?ip=192.168.1.1" \
+curl "https://ip-geolocation-service-production.up.railway.app/api/geolocation/v1/locate?ip=192.168.1.1" \
   -H "x-device-platform: Web"
 
 # Invalid IP (returns 400)
-curl "http://localhost:8080/api/geolocation/v1/locate?ip=999.999.999.999" \
+curl "https://ip-geolocation-service-production.up.railway.app/api/geolocation/v1/locate?ip=999.999.999.999" \
   -H "x-device-platform: Web"
 ```
 
+Or against a local instance replacing the host with `http://localhost:8080`.
+
 ### Interactive documentation
 
-Swagger UI is available at `http://localhost:8080/swagger-ui.html` when the service is running. The OpenAPI spec is at `http://localhost:8080/v3/api-docs`.
+Swagger UI is available at:
+- **Production:** https://ip-geolocation-service-production.up.railway.app/swagger-ui.html
+- **Local:** http://localhost:8080/swagger-ui.html
+
+The OpenAPI spec is at `/v3/api-docs`.
 
 ## Docker
 
-Build and run with a single command:
+Runs the application together with a Redis instance:
 
 ```bash
 docker compose up
 ```
 
-Or build and run manually:
+The `redis` Spring profile is activated automatically by `docker-compose.yml`. This is the same setup used in production.
+
+Or build and run without Redis (Caffeine cache):
 
 ```bash
 docker build -t ip-geolocation-service .
 docker run -p 8080:8080 ip-geolocation-service
 ```
-
-The service is available at `http://localhost:8080` in both cases.
 
 ## Postman/Insomnia Collection
 
