@@ -1,50 +1,48 @@
-# Technical Decisions
+# Technical decisions
 
-## Framework: Spring Boot over Micronaut
+## Spring Boot
 
-The challenge allowed either Spring Boot or Micronaut. I chose Spring Boot because I know it well and am more comfortable working with it. Given the scope of this service, the practical difference between the two is minimal, so familiarity was the deciding factor.
+I picked Spring Boot because I'm comfortable with it. For a service this size the difference to other frameworks is negligible.
 
-## Two-layer architecture (application + infrastructure)
+## Two layers: application + infrastructure
 
-The challenge required a clear layered structure following Clean Architecture principles (RNF1). I also chose this approach because Clean Architecture and Hexagonal Architecture are patterns I have been studying, so this was a good opportunity to apply them in practice.
+Two packages instead of three:
 
-The project uses two layers instead of three:
+- `application/` -- business logic, models, port interfaces, exceptions. No framework imports.
+- `infrastructure/` -- controllers, HTTP client, cache, validation, config. Depends on `application/`, never the other way around.
 
-- `application/`: business logic, models, port interfaces, exceptions. No framework dependencies.
-- `infrastructure/`: controllers, external API client, cache, validation. Depends on `application/`, never the reverse.
+A dedicated `domain/` layer would just add folders without adding value here.
 
-A separate `domain/` layer would add complexity without benefit for a service this simple.
+## Ports and adapters
 
-## Hexagonal ports and adapters
+Two port interfaces in `application/port/`:
 
-The application layer exposes two port interfaces in `application/port/`:
+- `GeolocationUseCase` (input) -- the controller depends on this, not on the service class directly.
+- `GeolocationPort` (output) -- the service calls this to get data; the actual HTTP adapter lives in `infrastructure/external/`.
 
-- **Input port** (`GeolocationUseCase`): defines the use case the controller depends on. The controller never references `GeolocationService` directly, only this interface.
-- **Output port** (`GeolocationPort`): defines what the service needs from external data sources, implemented in `infrastructure/external/`.
-
-This keeps the dependency direction consistent: `infrastructure → application` through interfaces on both sides, never the reverse.
+Dependencies always point inward: infrastructure -> application.
 
 ## Cache
 
-The cache stores `GeolocationInfo` (raw data from the API) keyed by IP, not the full `GeolocationResponse`. This way, a cache hit always produces a fresh timestamp and accurate `source="cache"` on the response. Fallback responses are not cached, as required by RF4.
+The cache stores `GeolocationInfo` (raw API data) keyed by IP, not the full response. This way every cache hit gets a fresh timestamp and `source="cache"`. Fallback responses are never cached.
 
-`@Cacheable` was not used because it would cache the complete `GeolocationResponse` with `source="api"`, making cache hits indistinguishable on the response. Instead, the service accesses `CacheManager` directly, which gives full control over what gets stored and when.
+I didn't use `@Cacheable` because it would cache the whole `GeolocationResponse` including `source="api"`, and cache hits would look the same as fresh calls. Using `CacheManager` directly gives control over what goes in and what stays out.
 
-The cache backend is selected by Spring profile:
+Backend depends on the active Spring profile:
 
-- **Default (local)**: Caffeine in-memory cache. No external dependency, works out of the box, configured with TTL and max size from `application.yaml`.
-- **`redis` profile (production)**: Redis via `spring-boot-starter-data-redis`. Activated by setting `SPRING_PROFILES_ACTIVE=redis` and `REDIS_URL`. Values are serialized as JSON using `GenericJackson2JsonRedisSerializer`. On Railway, `REDIS_URL` maps to the Redis plugin's connection URL.
+- Default: Caffeine in-memory. No external dependency needed.
+- `redis` profile: Redis via `spring-boot-starter-data-redis`, serialized as JSON. Activated with `SPRING_PROFILES_ACTIVE=redis` and `REDIS_URL`.
 
-`docker-compose.yml` runs both services and sets the `redis` profile automatically. TTL and max size remain externalized and overridable via environment variables.
+`docker-compose.yml` sets the `redis` profile automatically. TTL and max size are configurable via `application.yaml` or environment variables.
 
-## Java Records over Lombok
+## Records over Lombok
 
-The challenge stack listed Lombok, and RNF5 says "Lombok or Records". I chose Records because they are a native Java 17+ feature that covers all the boilerplate reduction needed here (models, DTOs, config properties) without an extra dependency. Lombok would add nothing that Records do not already provide for this project.
+RNF5 says "Lombok or Records". Records are built into Java 17+ and cover everything needed here -- models, DTOs, config properties. No reason to add Lombok on top.
 
-## Geolocation provider selection via configuration
+## Provider selection
 
-The active geolocation adapter is selected by `app.geolocation.provider` in `application.yaml` using `@ConditionalOnProperty`. The current default is `ip-api`. To switch providers, create a new adapter implementing `GeolocationPort`, annotate it with the matching property value, and change one line in the YAML. No changes to the service or any other class are needed.
+The geolocation adapter is picked by `app.geolocation.provider` in `application.yaml` using `@ConditionalOnProperty`. To add a new provider: implement `GeolocationPort`, annotate it with the matching property value, change one line in the YAML.
 
-## Mutation testing scope: application layer only
+## Mutation testing scope
 
-Pitest targets `com.adriano.ip_geolocation_service.application.*`. The infrastructure layer is covered by integration and adapter tests, but mutation testing there would mostly exercise framework wiring rather than business logic. Limiting the scope keeps the mutation run fast and focused on the code that matters most.
+Pitest runs only against `application.*`. Infrastructure code is already covered by integration and adapter tests. Running mutations there would mostly test framework wiring, not business logic.
