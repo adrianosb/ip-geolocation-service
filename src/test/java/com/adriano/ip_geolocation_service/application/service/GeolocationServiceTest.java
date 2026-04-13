@@ -1,11 +1,11 @@
 package com.adriano.ip_geolocation_service.application.service;
 
 import com.adriano.ip_geolocation_service.application.exception.InvalidIpAddressException;
+import com.adriano.ip_geolocation_service.application.model.FallbackCountry;
 import com.adriano.ip_geolocation_service.application.model.GeolocationInfo;
 import com.adriano.ip_geolocation_service.application.model.GeolocationResponse;
 import com.adriano.ip_geolocation_service.application.port.GeolocationPort;
-import com.adriano.ip_geolocation_service.infrastructure.config.AppProperties;
-import com.adriano.ip_geolocation_service.infrastructure.validation.IpAddressValidator;
+import com.adriano.ip_geolocation_service.application.port.IpValidationPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +27,7 @@ class GeolocationServiceTest {
     private GeolocationPort geolocationPort;
 
     @Mock
-    private IpAddressValidator validator;
+    private IpValidationPort validator;
 
     @Mock
     private CacheManager cacheManager;
@@ -35,17 +35,12 @@ class GeolocationServiceTest {
     @Mock
     private Cache cache;
 
-    private AppProperties properties;
     private GeolocationService service;
 
     @BeforeEach
     void setUp() {
-        properties = new AppProperties(
-                new AppProperties.Geolocation("ip-api", "http://ip-api.com/json", 5),
-                new AppProperties.Fallback(new AppProperties.Fallback.Country("BR", "Brazil")),
-                new AppProperties.Cache(24, 10000));
-
-        service = new GeolocationService(geolocationPort, validator, cacheManager, properties);
+        service = new GeolocationService(geolocationPort, validator, cacheManager,
+                new FallbackCountry("BR", "Brazil"));
     }
 
     @Test

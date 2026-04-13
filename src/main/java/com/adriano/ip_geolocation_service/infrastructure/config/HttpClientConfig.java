@@ -1,5 +1,6 @@
 package com.adriano.ip_geolocation_service.infrastructure.config;
 
+import com.adriano.ip_geolocation_service.application.model.FallbackCountry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,5 +15,12 @@ public class HttpClientConfig {
         return HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(properties.geolocation().timeoutSeconds()))
                 .build();
+    }
+
+    @Bean
+    public FallbackCountry fallbackCountry(AppProperties properties) {
+        return new FallbackCountry(
+                properties.fallback().country().code(),
+                properties.fallback().country().name());
     }
 }

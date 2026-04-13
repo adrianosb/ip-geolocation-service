@@ -1,12 +1,12 @@
 package com.adriano.ip_geolocation_service.application.service;
 
 import com.adriano.ip_geolocation_service.application.exception.InvalidIpAddressException;
+import com.adriano.ip_geolocation_service.application.model.FallbackCountry;
 import com.adriano.ip_geolocation_service.application.model.GeolocationInfo;
 import com.adriano.ip_geolocation_service.application.model.GeolocationResponse;
 import com.adriano.ip_geolocation_service.application.port.GeolocationPort;
 import com.adriano.ip_geolocation_service.application.port.GeolocationUseCase;
-import com.adriano.ip_geolocation_service.infrastructure.config.AppProperties;
-import com.adriano.ip_geolocation_service.infrastructure.validation.IpAddressValidator;
+import com.adriano.ip_geolocation_service.application.port.IpValidationPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
@@ -23,18 +23,18 @@ public class GeolocationService implements GeolocationUseCase {
     private static final Logger logger = LoggerFactory.getLogger(GeolocationService.class);
 
     private final GeolocationPort geolocationPort;
-    private final IpAddressValidator validator;
+    private final IpValidationPort validator;
     private final CacheManager cacheManager;
-    private final AppProperties properties;
+    private final FallbackCountry fallbackCountry;
 
     public GeolocationService(GeolocationPort geolocationPort,
-            IpAddressValidator validator,
+            IpValidationPort validator,
             CacheManager cacheManager,
-            AppProperties properties) {
+            FallbackCountry fallbackCountry) {
         this.geolocationPort = geolocationPort;
         this.validator = validator;
         this.cacheManager = cacheManager;
-        this.properties = properties;
+        this.fallbackCountry = fallbackCountry;
     }
 
     @Override
@@ -84,9 +84,7 @@ public class GeolocationService implements GeolocationUseCase {
     private GeolocationResponse buildFallback(String ip) {
         return new GeolocationResponse(
                 ip,
-                new GeolocationResponse.Country(
-                        properties.fallback().country().code(),
-                        properties.fallback().country().name()),
+                new GeolocationResponse.Country(fallbackCountry.code(), fallbackCountry.name()),
                 null,
                 null,
                 null,

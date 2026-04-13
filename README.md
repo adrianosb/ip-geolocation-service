@@ -112,7 +112,7 @@ GitHub Actions runs `mvn clean verify` on every push/PR to `main` or `develop`. 
 
 - **Spring Boot** -- the framework I know best, so I could focus on the problem itself.
 - **Two layers** (`application/` + `infrastructure/`) -- enough separation for a service this size without adding empty folders.
-- **Ports and adapters** -- input port (`GeolocationUseCase`) and output port (`GeolocationPort`) keep the dependency direction pointing inward.
+- **Ports and adapters** -- three interfaces in `application/port/`: `GeolocationUseCase` (input), `GeolocationPort` (external API), and `IpValidationPort` (IP validation). The application layer has no imports from infrastructure.
 - **Cache** -- stores raw `GeolocationInfo` by IP so cache hits get a fresh timestamp and correct `source="cache"`. Fallbacks are never cached.
 - **Caffeine / Redis** -- Caffeine for local dev (no extra setup), Redis for production via Spring profile.
 - **Records over Lombok** -- Records cover everything needed here and are built into Java 17+.

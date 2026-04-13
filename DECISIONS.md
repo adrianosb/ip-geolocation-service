@@ -15,12 +15,24 @@ A third `domain/` layer felt like overkill for a single-entity service. Two laye
 
 ## Ports and adapters
 
-Two port interfaces in `application/port/`:
+Three port interfaces in `application/port/`:
 
-- `GeolocationUseCase` (input) - the controller calls this instead of the service class directly.
-- `GeolocationPort` (output) - the service uses this to fetch data; the HTTP adapter that implements it lives in `infrastructure/external/`.
+- `GeolocationUseCase` (input) — the controller calls this instead of the service class directly.
+- `GeolocationPort` (output) — the service uses this to fetch geolocation data; the HTTP adapter lives in `infrastructure/external/`.
+- `IpValidationPort` (output) — the service uses this to validate IPs; `IpAddressValidator` in `infrastructure/validation/` implements it.
 
 This keeps infrastructure depending on application, not the other way around.
+
+## Application layer isolation
+
+`GeolocationService` originally imported two infrastructure classes:
+
+- `IpAddressValidator` from `infrastructure/validation/`
+- `AppProperties` from `infrastructure/config/`
+
+To remove those imports, two changes were made. First, `IpValidationPort` was added to `application/port/` and `IpAddressValidator` was made to implement it — the service now depends on the interface only. Second, a `FallbackCountry` record was added to `application/model/`. A `@Bean` in `HttpClientConfig` reads `AppProperties` and constructs one, which gets injected into the service.
+
+The application layer now has no imports from infrastructure.
 
 ## Cache
 

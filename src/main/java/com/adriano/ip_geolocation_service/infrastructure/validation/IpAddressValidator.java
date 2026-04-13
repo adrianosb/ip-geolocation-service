@@ -1,11 +1,12 @@
 package com.adriano.ip_geolocation_service.infrastructure.validation;
 
+import com.adriano.ip_geolocation_service.application.port.IpValidationPort;
 import org.springframework.stereotype.Component;
 
 import java.util.regex.Pattern;
 
 @Component
-public class IpAddressValidator {
+public class IpAddressValidator implements IpValidationPort {
 
     private static final Pattern IPV4_FORMAT = Pattern.compile(
             "^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$");
