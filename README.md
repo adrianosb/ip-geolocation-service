@@ -58,7 +58,7 @@ curl "http://localhost:8080/api/geolocation/v1/locate?ip=177.45.123.45" \
   -H "x-device-platform: Android"
 
 # Another Brazilian IP
-curl "https://ip-geolocation-service-production.up.railway.app/api/geolocation/v1/locate?ip=187.95.109.100" \
+curl "https://localhost:8080/api/geolocation/v1/locate?ip=187.95.109.100" \
   -H "x-device-platform: Web"
 
 # IPv6
