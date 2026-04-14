@@ -4,6 +4,7 @@ import com.adriano.ip_geolocation_service.application.exception.InvalidIpAddress
 import com.adriano.ip_geolocation_service.application.model.FallbackCountry;
 import com.adriano.ip_geolocation_service.application.model.GeolocationInfo;
 import com.adriano.ip_geolocation_service.application.model.GeolocationResponse;
+import com.adriano.ip_geolocation_service.application.port.GeolocationCachePort;
 import com.adriano.ip_geolocation_service.application.port.GeolocationPort;
 import com.adriano.ip_geolocation_service.application.port.IpValidationPort;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 
 import java.util.Optional;
 
@@ -30,16 +29,13 @@ class GeolocationServiceTest {
     private IpValidationPort validator;
 
     @Mock
-    private CacheManager cacheManager;
-
-    @Mock
-    private Cache cache;
+    private GeolocationCachePort cache;
 
     private GeolocationService service;
 
     @BeforeEach
     void setUp() {
-        service = new GeolocationService(geolocationPort, validator, cacheManager,
+        service = new GeolocationService(geolocationPort, validator, cache,
                 new FallbackCountry("BR", "Brazil"));
     }
 
@@ -51,8 +47,7 @@ class GeolocationServiceTest {
 
         when(validator.isValidFormat(ip)).thenReturn(true);
         when(validator.isPrivateOrReserved(ip)).thenReturn(false);
-        when(cacheManager.getCache("geolocation")).thenReturn(cache);
-        when(cache.get(ip, GeolocationInfo.class)).thenReturn(null);
+        when(cache.get(ip)).thenReturn(Optional.empty());
         when(geolocationPort.findByIp(ip)).thenReturn(Optional.of(info));
 
         GeolocationResponse response = service.locate(ip);
@@ -76,8 +71,7 @@ class GeolocationServiceTest {
 
         when(validator.isValidFormat(ip)).thenReturn(true);
         when(validator.isPrivateOrReserved(ip)).thenReturn(false);
-        when(cacheManager.getCache("geolocation")).thenReturn(cache);
-        when(cache.get(ip, GeolocationInfo.class)).thenReturn(cached);
+        when(cache.get(ip)).thenReturn(Optional.of(cached));
 
         GeolocationResponse response = service.locate(ip);
 
@@ -100,7 +94,7 @@ class GeolocationServiceTest {
         assertThat(response.country().code()).isEqualTo("BR");
         assertThat(response.country().name()).isEqualTo("Brazil");
         assertThat(response.region()).isNull();
-        verifyNoInteractions(geolocationPort, cacheManager);
+        verifyNoInteractions(geolocationPort, cache);
     }
 
     @Test
@@ -115,7 +109,7 @@ class GeolocationServiceTest {
         assertThat(response.ip()).isEqualTo(ip);
         assertThat(response.source()).isEqualTo("fallback");
         assertThat(response.country().code()).isEqualTo("BR");
-        verifyNoInteractions(geolocationPort, cacheManager);
+        verifyNoInteractions(geolocationPort, cache);
     }
 
     @Test
@@ -125,8 +119,7 @@ class GeolocationServiceTest {
 
         when(validator.isValidFormat(ip)).thenReturn(true);
         when(validator.isPrivateOrReserved(ip)).thenReturn(false);
-        when(cacheManager.getCache("geolocation")).thenReturn(cache);
-        when(cache.get(ip, GeolocationInfo.class)).thenReturn(null);
+        when(cache.get(ip)).thenReturn(Optional.empty());
         when(geolocationPort.findByIp(ip)).thenReturn(Optional.empty());
 
         GeolocationResponse response = service.locate(ip);
@@ -134,7 +127,7 @@ class GeolocationServiceTest {
         assertThat(response.source()).isEqualTo("fallback");
         assertThat(response.country().code()).isEqualTo("BR");
         assertThat(response.country().name()).isEqualTo("Brazil");
-        verify(cache, never()).put(notNull(), notNull());
+        verify(cache, never()).put(any(String.class), any(GeolocationInfo.class));
     }
 
     @Test
@@ -146,18 +139,18 @@ class GeolocationServiceTest {
         assertThatThrownBy(() -> service.locate(ip))
                 .isInstanceOf(InvalidIpAddressException.class);
 
-        verifyNoInteractions(geolocationPort, cacheManager);
+        verifyNoInteractions(geolocationPort, cache);
     }
 
     @Test
-    void locate_cacheManagerReturnsNull_callsPortNormally() {
+    void locate_cacheMiss_callsPort() {
         String ip = "8.8.8.8";
         GeolocationInfo info = new GeolocationInfo(ip, "US", "United States", "CA", "California",
                 "Mountain View", 37.386, -122.0838, "America/Los_Angeles", "Google LLC");
 
         when(validator.isValidFormat(ip)).thenReturn(true);
         when(validator.isPrivateOrReserved(ip)).thenReturn(false);
-        when(cacheManager.getCache("geolocation")).thenReturn(null);
+        when(cache.get(ip)).thenReturn(Optional.empty());
         when(geolocationPort.findByIp(ip)).thenReturn(Optional.of(info));
 
         GeolocationResponse response = service.locate(ip);

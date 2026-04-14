@@ -15,11 +15,12 @@ A third `domain/` layer felt like overkill for a single-entity service. Two laye
 
 ## Ports and adapters
 
-Three port interfaces in `application/port/`:
+Four port interfaces in `application/port/`:
 
 - `GeolocationUseCase` (input) — the controller calls this instead of the service class directly.
 - `GeolocationPort` (output) — the service uses this to fetch geolocation data; the HTTP adapter lives in `infrastructure/external/`.
 - `IpValidationPort` (output) — the service uses this to validate IPs; `IpAddressValidator` in `infrastructure/validation/` implements it.
+- `GeolocationCachePort` (output) — the service uses this to read and write cache entries; `GeolocationCacheAdapter` in `infrastructure/cache/` wraps Spring's `CacheManager`.
 
 This keeps infrastructure depending on application, not the other way around.
 
@@ -32,13 +33,13 @@ This keeps infrastructure depending on application, not the other way around.
 
 To remove those imports, two changes were made. First, `IpValidationPort` was added to `application/port/` and `IpAddressValidator` was made to implement it — the service now depends on the interface only. Second, a `FallbackCountry` record was added to `application/model/`. A `@Bean` in `HttpClientConfig` reads `AppProperties` and constructs one, which gets injected into the service.
 
-The application layer now has no imports from infrastructure.
+The application layer now has no imports from infrastructure. The controller returns `GeolocationResponseDto` (in `infrastructure/web/`) instead of `GeolocationResponse` directly, so OpenAPI annotations stay out of the domain model.
 
 ## Cache
 
 The cache stores `GeolocationInfo` (the raw API data) keyed by IP, not the full response. That way each cache hit still gets a fresh timestamp and `source="cache"`. Fallback responses are never cached.
 
-I used `CacheManager` directly instead of `@Cacheable` because `@Cacheable` would store the entire `GeolocationResponse` including `source="api"`, and cache hits would look identical to fresh calls.
+I avoided `@Cacheable` because it would store the entire `GeolocationResponse` including `source="api"`, and cache hits would look identical to fresh calls. Instead, `GeolocationService` calls `GeolocationCachePort` directly so it can control what gets stored and set the right `source` field. The Spring `CacheManager` is hidden behind `GeolocationCacheAdapter` in infrastructure.
 
 Backend depends on the active Spring profile:
 
