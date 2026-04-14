@@ -1,7 +1,6 @@
 package com.adriano.ip_geolocation_service.infrastructure.web;
 
 import com.adriano.ip_geolocation_service.application.exception.InvalidDevicePlatformException;
-import com.adriano.ip_geolocation_service.application.model.GeolocationResponse;
 import com.adriano.ip_geolocation_service.application.port.GeolocationUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,10 +32,10 @@ public class GeolocationController {
     }
 
     @Operation(summary = "Locate an IP address", description = "Returns geographic information for the given IP. Falls back to Brazil if the external API is unavailable.")
-    @ApiResponse(responseCode = "200", description = "Location resolved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GeolocationResponse.class)))
+    @ApiResponse(responseCode = "200", description = "Location resolved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GeolocationResponseDto.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     @GetMapping(value = "/locate", produces = "application/json")
-    public ResponseEntity<GeolocationResponse> locate(
+    public ResponseEntity<GeolocationResponseDto> locate(
             @Parameter(description = "IPv4 or IPv6 address to locate", required = true, example = "8.8.8.8") @RequestParam @NonNull String ip,
             @Parameter(description = "Device platform. Accepted values: iOS, Android, Web", required = true, example = "Web") @RequestHeader("x-device-platform") String devicePlatform) {
 
@@ -44,7 +43,6 @@ public class GeolocationController {
             throw new InvalidDevicePlatformException(devicePlatform);
         }
 
-        GeolocationResponse response = geolocationService.locate(ip);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(GeolocationResponseDto.from(geolocationService.locate(ip)));
     }
 }

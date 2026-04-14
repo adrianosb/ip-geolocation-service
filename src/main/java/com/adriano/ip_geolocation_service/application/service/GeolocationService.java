@@ -4,13 +4,12 @@ import com.adriano.ip_geolocation_service.application.exception.InvalidIpAddress
 import com.adriano.ip_geolocation_service.application.model.FallbackCountry;
 import com.adriano.ip_geolocation_service.application.model.GeolocationInfo;
 import com.adriano.ip_geolocation_service.application.model.GeolocationResponse;
+import com.adriano.ip_geolocation_service.application.port.GeolocationCachePort;
 import com.adriano.ip_geolocation_service.application.port.GeolocationPort;
 import com.adriano.ip_geolocation_service.application.port.GeolocationUseCase;
 import com.adriano.ip_geolocation_service.application.port.IpValidationPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -24,16 +23,16 @@ public class GeolocationService implements GeolocationUseCase {
 
     private final GeolocationPort geolocationPort;
     private final IpValidationPort validator;
-    private final CacheManager cacheManager;
+    private final GeolocationCachePort cache;
     private final FallbackCountry fallbackCountry;
 
     public GeolocationService(GeolocationPort geolocationPort,
             IpValidationPort validator,
-            CacheManager cacheManager,
+            GeolocationCachePort cache,
             FallbackCountry fallbackCountry) {
         this.geolocationPort = geolocationPort;
         this.validator = validator;
-        this.cacheManager = cacheManager;
+        this.cache = cache;
         this.fallbackCountry = fallbackCountry;
     }
 
@@ -48,11 +47,10 @@ public class GeolocationService implements GeolocationUseCase {
             return buildFallback(ip);
         }
 
-        Cache cache = cacheManager.getCache("geolocation");
-        GeolocationInfo cached = cache != null ? cache.get(ip, GeolocationInfo.class) : null;
-        if (cached != null) {
+        Optional<GeolocationInfo> cached = cache.get(ip);
+        if (cached.isPresent()) {
             logger.debug("Cache hit for IP {}.", ip);
-            return buildResponse(cached, "cache");
+            return buildResponse(cached.get(), "cache");
         }
 
         Optional<GeolocationInfo> result = geolocationPort.findByIp(ip);
@@ -62,9 +60,7 @@ public class GeolocationService implements GeolocationUseCase {
         }
 
         GeolocationInfo info = result.get();
-        if (cache != null) {
-            cache.put(ip, info);
-        }
+        cache.put(ip, info);
         return buildResponse(info, "api");
     }
 
